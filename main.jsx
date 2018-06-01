@@ -1,1 +1,1 @@
-﻿#target photoshop//@include "./logging.jsxlib"createLogFile('normal');createLogFile('special');
+﻿#target photoshop//@include "./logging.jsxlib"var defaultLog = createLogFile();log(defaultLog, "Logging to the default log!");var normalLog = createLogFile('normal');log(normalLog, "Logging to the normal log!");var specialLog = createLogFile('special');log(specialLog, "Logging to the special log!");log(defaultLog, "Logging to the default log again...");log("blah", "This will produce an error because a string was passed instead of the File object");
