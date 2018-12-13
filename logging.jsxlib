@@ -1,6 +1,8 @@
 ﻿function LogFile(loggingType) {
     //initialization
     this.file = createLogFile(loggingType);
+    this.path = getDirString();
+    this.type = loggingType;
     
     //primary method
     this.log = function(logMessage){
@@ -10,25 +12,56 @@
             return true;
             }
         
+    //cleanup
+    this.removeOld = function(typeString, theDate){
+        typeString = typeString || this.type;
+        removeLogFiles(typeString, theDate);
+        if(!this.file || !this.file.exists){
+            this.file = createLogFile(typeString);
+            }
+        }
+
+
     //helper functions
     function createLogFile(typeString){       
         typeString = typeString || "default";
-        var logFileDirString = File($.fileName).path + "/logs/"
-        var logFileDir = new Folder(logFileDirString);
+        var logFileDir = new Folder(getDirString());
         if (!logFileDir.exists){
             logFileDir.create();
             }
         var nowString = getDateTimeString();
         var logFileName = nowString + "-" + typeString + ".log";
-        var logFilePath = logFileDirString + logFileName;
+        var logFilePath = getDirString() + logFileName;
         return new File(logFilePath);
         }
         
+    function removeLogFiles(typeString, theDate){
+        typeString = typeString || "default";
+        if ( !theDate || theDate.constructor !== Date ){
+            theDate = new Date();
+            }
+
+        var logFileDir = new Folder(getDirString());
+        if (logFileDir.exists){
+            var logFiles = logFileDir.getFiles();
+            for(f=0;f<logFiles.length;f++){
+                var theFile = logFiles[f];
+                if(theFile.created.getTime() < theDate.getTime() && theFile.name.search( typeString + ".log" ) > -1){
+
+                    theFile.remove();
+                    }
+                }
+            }
+        }
+
+    function getDirString(){
+        return ( File($.fileName).exists )? File($.fileName).path + "/logs/" : Folder.desktop + "/ExtendScript-Logging-Temp/";// account for un-saved or temp scripts
+        }
 
     function getDateTimeString(){
         var theDate = new Date();
         var yearOffset = 1900; //years are counted from 1900
-        var theYear = (theDate.getYear() + yearOffset).toString(); 
+        var theYear = (typeof theDate.getFullYear == "function")? theDate.getFullYear().toString() : (theDate.getYear + yearOffset).toString();// cross compatable with ES5/6 Shims 
         var monthOffset = 1; //january is specified as 0
         var theMonth = makeTwoCharString(theDate.getMonth() + monthOffset);
         var theDay = makeTwoCharString(theDate.getDate());
@@ -47,9 +80,4 @@
             return RangeError('Input Integer too large (needs more than 2 characters)!');
             }
         }
-        
     }
- 
-
-
-
